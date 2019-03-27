@@ -34,6 +34,7 @@ class Quiz{
 	/**
 	 * Listen to every custom events (used for security purposes)
 	 * @param {Object[]} questions The current Quiz questions
+	 * @private
 	 */
 	_listenToCustomEvents(questions){
 		document.addEventListener('quiz.js-addQuestions', ({detail}) => {
@@ -103,7 +104,7 @@ class Quiz{
 
 	/**
 	 * Set the Quiz to run inside a DOM Element
-	 * @param {String|Element} node 
+	 * @param {String|Element} node The Element to run the Quiz in
 	 * @returns {Quiz} The current Quiz
 	 */
 	attachTo(node){

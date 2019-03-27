@@ -1,0 +1,25 @@
+{
+  "name": "quiz.js",
+  "version": "0.0.1",
+  "description": "Create quizzes easily",
+  "main": "Quiz.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preversion": "jsdoc . -R README.md -c docs/jsdoc-conf.json && git add * || true"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zenoo/Quiz.js.git"
+  },
+  "keywords": [
+    "quiz",
+    "generator",
+    "game"
+  ],
+  "author": "Zenoo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Zenoo/Quiz.js/issues"
+  },
+  "homepage": "https://github.com/Zenoo/Quiz.js#readme"
+}

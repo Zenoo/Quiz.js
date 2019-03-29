@@ -29,21 +29,27 @@
             <pre class="prettyprint source linenums"><code>/* exported Quiz */
 
 /**
+ * @typedef {Object} Question
+ * @property {String}   questions.title                    Question title
+ * @property {String}   questions.id                       Question id (must be unique)
+ * @property {Object[]} questions.answers                  Answer information holder
+ * @property {String}   questions.answers.title            Answer title
+ * @property {String}   questions.answers.value            Answer real value
+ * @property {Number}   questions.answers.chosenPercentage Answer pick percentage
+ */
+
+/**
  * Quiz class
  */
 class Quiz{
 	/**
 	 * Quiz constructor
-	 * @param {Object[]} questions                          Question information holder
-	 * @param {String}   questions.title                    Question title
-	 * @param {String}   questions.id                       Question id (must be unique)
-	 * @param {Object[]} questions.answers                  Answer information holder
-	 * @param {String}   questions.answers.title            Answer title
-	 * @param {String}   questions.answers.value            Answer real value
-	 * @param {Number}   questions.answers.chosenPercentage Answer pick percentage
+	 * @param {Question[]} questions Question list
 	 */
 	constructor(questions){
 		questions = questions || [];
+
+		const selectedQuestions = [];
 
 		/**
 		 * @member {Function[]} _onAnswerCallbacks
@@ -56,29 +62,36 @@ class Quiz{
 		 */
 		this._onEndCallbacks = [];
 
-		this._listenToCustomEvents(questions);
+		this._listenToCustomEvents(questions, selectedQuestions);
 	}
 
 	/**
 	 * Listen to every custom events (used for security purposes)
-	 * @param {Object[]} questions The current Quiz questions
+	 * @param {Question[]} questions         The current Quiz questions
+	 * @param {Question[]} selectedQuestions The Quiz selected questions
 	 * @private
 	 */
-	_listenToCustomEvents(questions){
+	_listenToCustomEvents(questions, selectedQuestions){
 		document.addEventListener('quiz.js-addQuestions', ({detail}) => {
 			this._addQuestionsHandler(questions, detail);
+		});
+
+		document.addEventListener('quiz.js-removeQuestions', ({detail}) => {
+			this._removeQuestionsHandler(questions, detail);
+		});
+
+		document.addEventListener('quiz.js-start', ({detail}) => {
+			selectedQuestions = this._selectQuestions(questions, detail);
+
+			// TODO: Display first question here + attach listeners
+			this._displayQuestion(selectedQuestions[0]);
 		});
 	}
 
 	/**
 	 * Handler for the quiz.js-addQuestion event
-	 * @param {Object[]} questions                             The current Quiz questions
-	 * @param {String}   newQuestions.title                    Question title
-	 * @param {String}   newQuestions.id                       Question id (must be unique)
-	 * @param {Object[]} newQuestions.answers                  Answer information holder
-	 * @param {String}   newQuestions.answers.title            Answer title
-	 * @param {String}   newQuestions.answers.value            Answer real value
-	 * @param {Number}   newQuestions.answers.chosenPercentage Answer pick percentage
+	 * @param {Question[]} questions    The current Quiz questions
+	 * @param {Question[]} newQuestions Questions to add
 	 * @private
 	 */
 	_addQuestionsHandler(questions, newQuestions){
@@ -86,13 +99,49 @@ class Quiz{
 	}
 
 	/**
+	 * Handler for the quiz.js-addQuestion event
+	 * @param {Question[]} questions         The current Quiz questions
+	 * @param {Number[]}   questionsToRemove IDs of the questions to remove
+	 * @private
+	 */
+	_removeQuestionsHandler(questions, questionsToRemove){
+		questions = questions.filter(q => !questionsToRemove.includes(q.id));
+	}
+
+	/**
+	 * Select random questions at the start
+	 * @param {Question[]} questions The current Quiz questions
+	 * @param {Number}     steps     The amount of questions to select
+	 * @private
+	 */
+	_selectQuestions(questions, steps){
+		const selectedQuestions = [];
+		let i = steps;
+
+		while(i > 0){
+			const randomPosition = Math.floor(Math.random() * steps);
+
+			if(!selectedQuestions.includes(questions[randomPosition])){
+				selectedQuestions.push(questions[randomPosition]);
+				i--;
+			}
+		}
+
+		return selectedQuestions;
+	}
+
+	/**
+	 * Display a question in the DOM
+	 * @param {Question} question 
+	 * @private
+	 */
+	_displayQuestion(question){
+		this.wrapper.querySelector('.js-quiz-question').textContent = question.aaa;
+	}
+
+	/**
 	 * Add new questions to the Quiz
-	 * @param {Object[]} questions 
-	 * @param {String}   questions.id                       Question id (must be unique)
-	 * @param {Object[]} questions.answers                  Answer information holder
-	 * @param {String}   questions.answers.title            Answer title
-	 * @param {String}   questions.answers.value            Answer real value
-	 * @param {Number}   questions.answers.chosenPercentage Answer pick percentage
+	 * @param {Question[]} questions Questions to add
 	 * @returns {Quiz} The current Quiz
 	 */
 	addQuestions(...questions){
@@ -141,7 +190,12 @@ class Quiz{
 		 */
 		this.wrapper = node instanceof Element ? node : document.querySelector(node);
 
-		// TODO: Build DOM here
+		this.wrapper.classList.add('quiz-js-wrapper');
+		this.wrapper.innerHTML = /*html*/`
+			&lt;div class="quiz-js-question" data-id="">&lt;/div>
+			&lt;div class="quiz-js-answers">&lt;/div>
+			${this.timeLimit ? '&lt;div class="quiz-js-time-limit">&lt;/div>' : ''}
+		`;
 
 		return this;
 	}
@@ -152,10 +206,13 @@ class Quiz{
 	 * @returns {Quiz} The current Quiz
 	 */
 	start(steps){
-		if(this.wrapper){
-			// TODO: toggle first question
+		if(this.wrapper &amp;&amp; steps > 0){
+			document.dispatchEvent(new CustomEvent('quiz.js-start', {
+				detail: steps
+			}));
 		}else{
-			console.warn('Quiz.js: You didn\'t specify an Element to run the Quiz in. Use %c.attachTo()%c.', 'font-weight: bold; font-family: monospace', '');
+			if(steps) console.warn('Quiz.js: You didn\'t specify an Element to run the Quiz in. Use %c.attachTo()%c.', 'font-weight: bold; font-family: monospace', '');
+			else console.warn('Quiz.js: The amount of questions must be superior to 0');
 		}
 
 		return this;
@@ -236,7 +293,7 @@ class Quiz{
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Mar 27 2019 16:21:01 GMT+0100 (Romance Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Mar 29 2019 09:14:58 GMT+0100 (Romance Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

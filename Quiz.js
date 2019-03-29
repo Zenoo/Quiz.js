@@ -24,6 +24,16 @@ class Quiz{
 		const selectedQuestions = [];
 
 		/**
+		 * @type {Number}
+		 */
+		this.timeLimit = null;
+
+		/**
+		 * @type {Element}
+		 */
+		this.wrapper = null;
+
+		/**
 		 * @member {Function[]} _onAnswerCallbacks
 		 * @private
 		 */
@@ -143,9 +153,6 @@ class Quiz{
 	 * @returns {Quiz} The current Quiz
 	 */
 	setTimeLimit(time){
-		/**
-		 * @member {Number} timeLimit Maximum time to answer a question
-		 */
 		this.timeLimit = time;
 		
 		return this;
@@ -157,9 +164,6 @@ class Quiz{
 	 * @returns {Quiz} The current Quiz
 	 */
 	attachTo(node){
-		/**
-		 * @member {Element} wrapper The element containing the Quiz
-		 */
 		this.wrapper = node instanceof Element ? node : document.querySelector(node);
 
 		this.wrapper.classList.add('quiz-js-wrapper');

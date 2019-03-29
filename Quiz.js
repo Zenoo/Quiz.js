@@ -4,6 +4,7 @@
  * @typedef {Object} Question
  * @property {String}   questions.title                    Question title
  * @property {String}   questions.id                       Question id (must be unique)
+ * @property {String}   questions.answer                   Correct answer for the question (Must correspond to answers.title)
  * @property {Object[]} questions.answers                  Answer information holder
  * @property {String}   questions.answers.title            Answer title
  * @property {String}   questions.answers.value            Answer real value
@@ -25,8 +26,9 @@ class Quiz{
 
 		/**
 		 * @type {Number}
+		 * @private
 		 */
-		this.timeLimit = null;
+		this._timeLimit = null;
 
 		/**
 		 * @type {Element}
@@ -34,12 +36,38 @@ class Quiz{
 		this.wrapper = null;
 
 		/**
-		 * @member {Function[]} _onAnswerCallbacks
+		 * @type {Element}
+		 * @private
+		 */
+		this._timer = null;
+
+		/**
+		 * @type {Number}
+		 * @private
+		 */
+		this._timerInterval = null;
+
+		/**
+		 * @type {Date}
+		 * @private
+		 */
+		this._timerStarted = null;
+
+		/**
+		 * @type {Object[]}
+		 * @param {String}   id     Question ID
+		 * @param {String}   answer Answer value
+		 * @param {Number}   time   Answer time
+		 */
+		this.answers = [];
+
+		/**
+		 * @type {Function[]}
 		 * @private
 		 */
 		this._onAnswerCallbacks = [];
 		/**
-		 * @member {Function[]} _onEndCallbacks
+		 * @type {Function[]}
 		 * @private
 		 */
 		this._onEndCallbacks = [];
@@ -65,8 +93,7 @@ class Quiz{
 		document.addEventListener('quiz.js-start', ({detail}) => {
 			selectedQuestions = this._selectQuestions(questions, detail);
 
-			// TODO: Display first question here + attach listeners
-			this._displayQuestion(selectedQuestions[0]);
+			this._displayQuestion(selectedQuestions, 0);
 		});
 	}
 
@@ -114,11 +141,143 @@ class Quiz{
 
 	/**
 	 * Display a question in the DOM
-	 * @param {Question} question 
+	 * @param {Question[]} questions
+	 * @param {Number}     position
 	 * @private
 	 */
-	_displayQuestion(question){
-		this.wrapper.querySelector('.js-quiz-question').textContent = question.aaa;
+	_displayQuestion(questions, position){
+		this.wrapper.querySelector('.quiz-js-question').textContent = questions[position].title;
+		this.wrapper.querySelector('.quiz-js-answers').innerHTML = questions[position].answers.map(answer => `
+			<div>
+				<button data-value="${answer.value}">${answer.title}</button>
+			</div>
+		`).join('');
+
+		this._listenToUserAnswer(questions, position);
+
+		if(this._timeLimit){
+			this._timer.parentElement.classList.add('quiz-js-active');
+			this._resetTimer(questions, position);
+		}
+
+		this.wrapper.querySelector('.quiz-js-next').classList.add('quiz-js-hidden');
+	}
+
+	/**
+	 * Listen to user click
+	 * @param {Question[]} questions
+	 * @param {Number}     position
+	 * @private
+	 */
+	_listenToUserAnswer(questions, position){
+		this.wrapper.querySelectorAll('.quiz-js-answers button').forEach(answer => {
+			answer.addEventListener('click', () => {
+				const answerTime = new Date() - this._timerStarted;
+
+				clearInterval(this._timerInterval);
+
+				this.answers.push({
+					id: questions[position].id,
+					answer: answer.getAttribute('data-value'),
+					time: answerTime
+				});
+
+				this._onAnswerCallbacks.forEach(callback => {
+					Reflect.apply(callback, null, [
+						questions[position].id,
+						{
+							value: answer.getAttribute('data-value'),
+							time: answerTime
+						}
+					]);
+				});
+
+				this._displayQuestionInformations(questions, position, answer.getAttribute('data-value'));
+			});
+		});
+	}
+
+	/**
+	 * Reset the timer to full time
+	 * @param {Question[]} questions
+	 * @param {Number}     position
+	 * @private
+	 */
+	_resetTimer(questions, position){
+		this._timer.style.width = '100%';
+		this._timerStarted = new Date();
+		this._timer.nextElementSibling.textContent = (this._timeLimit / 1000).toFixed(2) + 's';
+
+		this._timerInterval = setInterval(() => {
+			const progress = (new Date() - this._timerStarted) / this._timeLimit;
+
+			if(progress < 1){
+				this._timer.style.width = 100 - progress * 100 + '%';
+				this._timer.nextElementSibling.textContent = ((this._timeLimit - this._timeLimit * progress) / 1000).toFixed(2) + 's';
+			}else{
+				this.answers.push({
+					id: questions[position].id,
+					answer: '',
+					time: this._timeLimit
+				});
+
+				this._onAnswerCallbacks.forEach(callback => {
+					Reflect.apply(callback, null, [
+						questions[position].id,
+						{
+							value: '',
+							time: this._timeLimit
+						}
+					]);
+				});
+
+				clearInterval(this._timerInterval);
+				this._displayQuestionInformations(questions, position);
+			}
+		}, 10);
+	}
+
+	/**
+	 * Display chosen percentage for a question
+	 * @param {Question[]} questions
+	 * @param {Number}     position
+	 * @param {String}     [value]
+	 */
+	_displayQuestionInformations(questions, position, value = ''){
+		questions[position].answers.forEach(answer => {
+			const answerButton = this.wrapper.querySelector(`.quiz-js-answers button[data-value="${answer.value}"]`);
+
+			answerButton.disabled = true;
+			if(value == answer.value) answerButton.classList.add('quiz-js-answer-clicked');
+			if(answer.value == questions[position].answer) answerButton.classList.add('quiz-js-answer-correct');
+
+			answerButton.innerHTML = /*html*/`
+				<span class="quiz-js-answer-percentage">${answer.chosenPercentage}%</span>
+				<span>${answer.title}</span>
+			`;
+		});
+
+		const nextButton = this.wrapper.querySelector('.quiz-js-next').cloneNode(true);
+
+		this.wrapper.querySelector('.quiz-js-next').replaceWith(nextButton);
+		nextButton.classList.remove('quiz-js-hidden');
+
+		nextButton.addEventListener('click', () => {
+			if(position + 1 < questions.length){
+				this._displayQuestion(questions, position + 1);
+			}else{
+				this._displayEnd();
+			}
+		});
+	}
+
+	/**
+	 * End panel display
+	 * @private
+	 */
+	_displayEnd(){
+		console.log(this.answers);
+		alert('Done !');
 	}
 
 	/**
@@ -153,7 +312,7 @@ class Quiz{
 	 * @returns {Quiz} The current Quiz
 	 */
 	setTimeLimit(time){
-		this.timeLimit = time;
+		this._timeLimit = time;
 		
 		return this;
 	}
@@ -170,8 +329,11 @@ class Quiz{
 		this.wrapper.innerHTML = /*html*/`
 			<div class="quiz-js-question" data-id=""></div>
 			<div class="quiz-js-answers"></div>
-			${this.timeLimit ? '<div class="quiz-js-time-limit"></div>' : ''}
+			${this._timeLimit ? '<div class="quiz-js-time-limit"><div class="quiz-js-time-left"></div><div class="quiz-js-time-text"></div></div>' : ''}
+			<button class="quiz-js-next quiz-js-hidden">&gt;</button>
 		`;
+
+		this._timer = this.wrapper.querySelector('.quiz-js-time-left');
 
 		return this;
 	}

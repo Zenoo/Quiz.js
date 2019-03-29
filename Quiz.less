@@ -1,0 +1,55 @@
+.quiz-js-wrapper{
+	.quiz-js-hidden{
+		display: none;
+	}
+
+	.quiz-js-question{
+
+	}
+
+	.quiz-js-answers{
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-around;
+
+		&>div{
+			flex-basis: 50%;
+			text-align: center;
+
+			button{
+				&.quiz-js-answer-clicked{
+					border: 2px solid red;
+				}
+
+				&.quiz-js-answer-correct{
+					border: 2px solid green;
+				}
+
+				span{
+					display: block;
+
+					&.quiz-js-answer-percentage{
+						font-weight: bold;
+					}
+				}
+			}
+		}
+	}
+
+	.quiz-js-time-limit{
+		width: 100%;
+
+		.quiz-js-time-left{
+			height: 10px;
+			background-color: grey;
+		}
+
+		.quiz-js-time-text{
+
+		}
+	}
+
+	.quiz-js-next{
+
+	}
+}

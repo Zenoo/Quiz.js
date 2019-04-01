@@ -55,9 +55,10 @@ class Quiz{
 
 		/**
 		 * @type {Object[]}
-		 * @param {String}   id     Question ID
-		 * @param {String}   answer Answer value
-		 * @param {Number}   time   Answer time
+		 * @param {String}   id      Question ID
+		 * @param {String}   answer  Answer value
+		 * @param {Boolean}  correct Was the answer correct?
+		 * @param {Number}   time    Answer time
 		 */
 		this.answers = [];
 
@@ -156,7 +157,7 @@ class Quiz{
 		this._listenToUserAnswer(questions, position);
 
 		if(this._timeLimit){
-			this._timer.parentElement.classList.add('quiz-js-active');
+			this._timer.parentElement.classList.remove('quiz-js-hidden');
 			this._resetTimer(questions, position);
 		}
 
@@ -179,6 +180,7 @@ class Quiz{
 				this.answers.push({
 					id: questions[position].id,
 					answer: answer.getAttribute('data-value'),
+					correct: questions[position].answer == answer.getAttribute('data-value'),
 					time: answerTime
 				});
 
@@ -187,6 +189,7 @@ class Quiz{
 						questions[position].id,
 						{
 							value: answer.getAttribute('data-value'),
+							correct: questions[position].answer == answer.getAttribute('data-value'),
 							time: answerTime
 						}
 					]);
@@ -277,7 +280,19 @@ class Quiz{
 	 */
 	_displayEnd(){
 		console.log(this.answers);
-		alert('Done !');
+
+		this.wrapper.querySelector('.quiz-js-question').classList.add('quiz-js-hidden');
+		this.wrapper.querySelector('.quiz-js-answers').classList.add('quiz-js-hidden');
+		if(this._timeLimit) this.wrapper.querySelector('.quiz-js-time-limit').classList.add('quiz-js-hidden');
+		this.wrapper.querySelector('.quiz-js-next').classList.add('quiz-js-hidden');
+		this.wrapper.querySelector('.quiz-js-results').classList.remove('quiz-js-hidden');
+
+		this.wrapper.querySelector('.quiz-js-ok span').textContent = this.answers.filter(a => a.correct).length;
+		this.wrapper.querySelector('.quiz-js-error span').textContent = this.answers.filter(a => !a.correct).length;
+
+		this._onEndCallbacks.forEach(callback => {
+			Reflect.apply(callback, null, [this.answers]);
+		});
 	}
 
 	/**
@@ -329,8 +344,12 @@ class Quiz{
 		this.wrapper.innerHTML = /*html*/`
 			<div class="quiz-js-question" data-id=""></div>
 			<div class="quiz-js-answers"></div>
-			${this._timeLimit ? '<div class="quiz-js-time-limit"><div class="quiz-js-time-left"></div><div class="quiz-js-time-text"></div></div>' : ''}
-			<button class="quiz-js-next quiz-js-hidden">&gt;</button>
+			${this._timeLimit ? '<div class="quiz-js-time-limit quiz-js-hidden"><div class="quiz-js-time-left"></div><div class="quiz-js-time-text"></div></div>' : ''}
+			<button class="quiz-js-next quiz-js-hidden">&#10095;</button>
+			<div class="quiz-js-results quiz-js-hidden">
+				<p class="quiz-js-ok"><span></span> &#10004;</p>
+				<p class="quiz-js-error"><span></span> &#10008;</p>
+			</div>
 		`;
 
 		this._timer = this.wrapper.querySelector('.quiz-js-time-left');
@@ -359,10 +378,11 @@ class Quiz{
 	/**
 	 * Callback for every Quiz answer
 	 * @callback onAnswerCallback
-	 * @param {String} questionId   Answered question ID
-	 * @param {String} answer       Answer informations holder
-	 * @param {String} answer.value Answer value
-	 * @param {Number} answer.time  Answer time
+	 * @param {String}  questionId     Answered question ID
+	 * @param {String}  answer         Answer informations holder
+	 * @param {String}  answer.value   Answer value
+	 * @param {Boolean} answer.correct Was the answer correct?
+	 * @param {Number}  answer.time    Answer time
 	 */
 
 	/**
@@ -379,10 +399,11 @@ class Quiz{
 	/**
 	 * Callback for the Quiz end
 	 * @callback onEndCallback
-	 * @param {Object[]} questions        Question informations holder
-	 * @param {String}   questions.id     Question ID
-	 * @param {String}   questions.answer Answer value
-	 * @param {Number}   questions.time   Answer time
+	 * @param {Object[]} questions         Question informations holder
+	 * @param {String}   questions.id      Question ID
+	 * @param {String}   questions.answer  Answer value
+	 * @param {Boolean}  questions.correct Was the answer correct?
+	 * @param {Number}   questions.time    Answer time
 	 */
 
 	/**
@@ -412,6 +433,30 @@ class Quiz{
 	 */
 	offEnd(){
 		this._onEndCallbacks = [];
+
+		return this;
+	}
+
+	/**
+	 * Reset the Quiz to its base form
+	 * @returns {Quiz} The current Quiz
+	 */
+	reset(){
+		clearInterval(this._timerInterval);
+		this._timerStarted = null;
+		this.answers = [];
+
+		const
+			question = this.wrapper.querySelector('.quiz-js-question'),
+			answers = this.wrapper.querySelector('.quiz-js-answers');
+
+		question.setAttribute('data-id', '');
+		question.classList.remove('quiz-js-hidden');
+		question.innerHTML = '';
+		answers.innerHTML = '';
+		answers.classList.remove('quiz-js-hidden');
+		this.wrapper.querySelector('.quiz-js-time-limit').classList.add('quiz-js-hidden');
+		this.wrapper.querySelector('.quiz-js-results').classList.add('quiz-js-hidden');
 
 		return this;
 	}

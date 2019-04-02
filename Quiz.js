@@ -245,6 +245,7 @@ class Quiz{
 	 * @param {Question[]} questions
 	 * @param {Number}     position
 	 * @param {String}     [value]
+	 * @private
 	 */
 	_displayQuestionInformations(questions, position, value = ''){
 		questions[position].answers.forEach(answer => {

@@ -43,7 +43,7 @@ quiz
 ```
 * **Methods**
 
-See the [documentation](https://zenoo.github.io/Quiz.js/Quiz.html) for the method definitions.  
+See the [documentation](https://zenoo.github.io/Quiz.js/Quiz.html) for the method definitions. 
 
 * **Example**
 

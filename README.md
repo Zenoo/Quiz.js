@@ -13,15 +13,33 @@ Simply import Quiz into your HTML.
 * **How to use**
 
 Create a new [`Quiz`](https://zenoo.github.io/Quiz.js/Quiz.html) object :
-```
-let quiz = new Quiz(options);
-```
-* **Options**
+```JS
+let quiz = new Quiz(questions);
 
+quiz
+  .setTimeLimit(1000*20) // (Optional) Set a time limit to answer
+  .attachTo('#test')     // Display the quiz in the targeted element
+  .start(3);             // Start the quiz with 3 random questions
 ```
-{
-	...
-}
+* **Questions**
+
+```JS
+[
+  {
+    id: '1+1',          // Unique question ID
+    title: '1 + 1 = ?', // Actual question displayed
+    answer: '2',        // Correct answer (must correspond to one of the answers' value)
+    answers: [          // Answer list
+      {
+        title: '11',         // Answer displayed
+        value: '11',         // Answer actual value
+        chosenPercentage: 11 // Percentage of people who chose this answer
+	  },
+	  ...
+    ]
+  },
+  ...
+]
 ```
 * **Methods**
 

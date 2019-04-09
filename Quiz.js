@@ -212,9 +212,11 @@ class Quiz{
 	 * @private
 	 */
 	_resetTimer(questions, position){
+		const timerText = this.wrapper.querySelector('.quiz-js-time-text');
+
 		this._timer.style.width = '100%';
 		this._timerStarted = new Date();
-		this._timer.nextElementSibling.textContent = (this._timeLimit / 1000).toFixed(2) + 's';
+		timerText.textContent = (this._timeLimit / 1000).toFixed(2) + 's';
 
 		this._onTimerStartCallbacks.forEach(callback => {
 			Reflect.apply(callback, null, [this._timer.parentElement]);
@@ -225,7 +227,7 @@ class Quiz{
 
 			if(progress < 1){
 				this._timer.style.width = 100 - progress * 100 + '%';
-				this._timer.nextElementSibling.textContent = ((this._timeLimit - this._timeLimit * progress) / 1000).toFixed(2) + 's';
+				timerText.textContent = ((this._timeLimit - this._timeLimit * progress) / 1000).toFixed(2) + 's';
 			}else{
 				this.answers.push({
 					id: questions[position].id,

@@ -291,8 +291,6 @@ class Quiz{
 	 * @private
 	 */
 	_displayEnd(){
-		console.log(this.answers);
-
 		this.wrapper.querySelector('.quiz-js-question').classList.add('quiz-js-hidden');
 		this.wrapper.querySelector('.quiz-js-answers').classList.add('quiz-js-hidden');
 		if(this._timeLimit) this.wrapper.querySelector('.quiz-js-time-limit').classList.add('quiz-js-hidden');

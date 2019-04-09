@@ -66,6 +66,11 @@ class Quiz{
 		 * @type {Function[]}
 		 * @private
 		 */
+		this._onTimerStartCallbacks = [];
+		/**
+		 * @type {Function[]}
+		 * @private
+		 */
 		this._onAnswerCallbacks = [];
 		/**
 		 * @type {Function[]}
@@ -210,6 +215,10 @@ class Quiz{
 		this._timer.style.width = '100%';
 		this._timerStarted = new Date();
 		this._timer.nextElementSibling.textContent = (this._timeLimit / 1000).toFixed(2) + 's';
+
+		this._onTimerStartCallbacks.forEach(callback => {
+			Reflect.apply(callback, null, [this._timer.parentElement]);
+		});
 
 		this._timerInterval = setInterval(() => {
 			const progress = (new Date() - this._timerStarted) / this._timeLimit;
@@ -377,6 +386,23 @@ class Quiz{
 	}
 
 	/**
+	 * Callback for every Quiz timer start
+	 * @callback onTimerStartCallback
+	 * @param {String}  timerElement   Quiz timer element
+	 */
+
+	/**
+	 * Add a callback after each timer start
+	 * @param {onTimerStartCallback} callback 
+	 * @returns {Quiz} The current Quiz
+	 */
+	onTimerStart(callback){
+		this._onTimerStartCallbacks.push(callback);
+
+		return this;
+	}
+
+	/**
 	 * Callback for every Quiz answer
 	 * @callback onAnswerCallback
 	 * @param {String}  questionId     Answered question ID
@@ -387,7 +413,7 @@ class Quiz{
 	 */
 
 	/**
-	 * Add a callback
+	 * Add a callback after each user answer
 	 * @param {onAnswerCallback} callback 
 	 * @returns {Quiz} The current Quiz
 	 */
@@ -408,12 +434,22 @@ class Quiz{
 	 */
 
 	/**
-	 * 
+	 * Add a callback at the end of the Quiz
 	 * @param {onEndCallback} callback 
 	 * @returns {Quiz} The current Quiz
 	 */
 	onEnd(callback){
 		this._onEndCallbacks.push(callback);
+
+		return this;
+	}
+
+	/**
+	 * Remove every onTimerStart callback
+	 * @returns {Quiz} The current Quiz
+	 */
+	offAnswer(){
+		this._onTimerStartCallbacks = [];
 
 		return this;
 	}

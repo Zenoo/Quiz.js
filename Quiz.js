@@ -97,7 +97,7 @@ class Quiz{
 		});
 
 		document.addEventListener('quiz.js-start', ({detail}) => {
-			selectedQuestions = this._selectQuestions(questions, detail);
+			selectedQuestions = this._selectQuestions(questions, detail > questions.length ? questions.length : detail);
 
 			this._displayQuestion(selectedQuestions, 0);
 		});

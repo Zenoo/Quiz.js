@@ -191,7 +191,7 @@ class Quiz{
 
 				this._onAnswerCallbacks.forEach(callback => {
 					Reflect.apply(callback, null, [
-						questions[position].id,
+						questions[position],
 						{
 							value: answer.getAttribute('data-value'),
 							correct: questions[position].answer == answer.getAttribute('data-value'),
@@ -405,7 +405,7 @@ class Quiz{
 	/**
 	 * Callback for every Quiz answer
 	 * @callback onAnswerCallback
-	 * @param {String}  questionId     Answered question ID
+	 * @param {Object}  question       Answered question object
 	 * @param {String}  answer         Answer informations holder
 	 * @param {String}  answer.value   Answer value
 	 * @param {Boolean} answer.correct Was the answer correct?
@@ -448,7 +448,7 @@ class Quiz{
 	 * Remove every onTimerStart callback
 	 * @returns {Quiz} The current Quiz
 	 */
-	offAnswer(){
+	offTimerStart(){
 		this._onTimerStartCallbacks = [];
 
 		return this;

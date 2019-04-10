@@ -153,6 +153,8 @@ class Quiz{
 	 */
 	_displayQuestion(questions, position){
 		this.wrapper.querySelector('.quiz-js-question').textContent = questions[position].title;
+
+		this._shuffleArray(questions[position].answers);
 		this.wrapper.querySelector('.quiz-js-answers').innerHTML = questions[position].answers.map(answer => `
 			<div>
 				<button data-value="${answer.value}">${answer.title}</button>
@@ -167,6 +169,19 @@ class Quiz{
 		}
 
 		this.wrapper.querySelector('.quiz-js-next').classList.add('quiz-js-hidden');
+	}
+
+	/**
+	 * Shuffle an array
+	 * @param {Array} array 
+	 * @private
+	 */
+	_shuffleArray(array){
+		for(let i = array.length - 1; i > 0; i--){
+			const j = Math.floor(Math.random() * (i + 1));
+
+			[array[i], array[j]] = [array[j], array[i]];
+		}
 	}
 
 	/**

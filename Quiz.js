@@ -252,7 +252,7 @@ class Quiz{
 
 				this._onAnswerCallbacks.forEach(callback => {
 					Reflect.apply(callback, null, [
-						questions[position].id,
+						questions[position],
 						{
 							value: '',
 							time: this._timeLimit

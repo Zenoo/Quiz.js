@@ -152,7 +152,7 @@ class Quiz{
 	 * @private
 	 */
 	_displayQuestion(questions, position){
-		this.wrapper.querySelector('.quiz-js-question').textContent = questions[position].title;
+		this.wrapper.querySelector('.quiz-js-question').innerHTML = questions[position].title;
 
 		this._shuffleArray(questions[position].answers);
 		this.wrapper.querySelector('.quiz-js-answers').innerHTML = questions[position].answers.map(answer => `

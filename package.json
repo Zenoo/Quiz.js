@@ -1,6 +1,6 @@
 {
   "name": "quiz.js",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Create quizzes easily",
   "main": "Quiz.js",
   "scripts": {

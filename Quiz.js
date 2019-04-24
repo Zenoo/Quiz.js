@@ -97,7 +97,14 @@ class Quiz{
 		});
 
 		document.addEventListener('quiz.js-start', ({detail}) => {
-			selectedQuestions = this._selectQuestions(questions, detail > questions.length ? questions.length : detail);
+			// .start(questions)
+			if(isNaN(detail)){
+				selectedQuestions = detail;
+			}else{
+				// .start(steps)
+				selectedQuestions = this._selectQuestions(questions, detail > questions.length ? questions.length : detail);
+			}
+			
 
 			this._displayQuestion(selectedQuestions, 0);
 		});
@@ -384,17 +391,17 @@ class Quiz{
 
 	/**
 	 * Start the Quiz
-	 * @param {Number} steps The amount of questions to go through
+	 * @param {Number|Question[]} steps The amount of questions to go through OR the list of questions to ask
 	 * @returns {Quiz} The current Quiz
 	 */
 	start(steps){
-		if(this.wrapper && steps > 0){
+		if(this.wrapper && (!isNaN(steps) && steps > 0 || isNaN(steps) && steps.length)){
 			document.dispatchEvent(new CustomEvent('quiz.js-start', {
 				detail: steps
 			}));
 		}else{
 			if(steps) console.warn('Quiz.js: You didn\'t specify an Element to run the Quiz in. Use %c.attachTo()%c.', 'font-weight: bold; font-family: monospace', '');
-			else console.warn('Quiz.js: The amount of questions must be superior to 0');
+			else console.warn('Quiz.js: The amount of questions must be greater than 0');
 		}
 
 		return this;

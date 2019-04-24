@@ -20,6 +20,15 @@ quiz
   .setTimeLimit(1000*20) // (Optional) Set a time limit to answer
   .attachTo('#test')     // Display the quiz in the targeted element
   .start(3);             // Start the quiz with 3 random questions
+
+// OR
+
+let quiz = new Quiz();
+
+quiz
+  .setTimeLimit(1000*20) // (Optional) Set a time limit to answer
+  .attachTo('#test')     // Display the quiz in the targeted element
+  .start(questions);     // Start the quiz with every specified question
 ```
 * **Questions**
 

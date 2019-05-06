@@ -251,6 +251,8 @@ class Quiz{
 				this._timer.style.width = 100 - progress * 100 + '%';
 				timerText.textContent = ((this._timeLimit - this._timeLimit * progress) / 1000).toFixed(2) + 's';
 			}else{
+				clearInterval(this._timerInterval);
+
 				this.answers.push({
 					id: questions[position].id,
 					answer: '',
@@ -266,8 +268,7 @@ class Quiz{
 						}
 					]);
 				});
-
-				clearInterval(this._timerInterval);
+				
 				this._displayQuestionInformations(questions, position);
 			}
 		}, 10);

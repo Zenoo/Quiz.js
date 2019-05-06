@@ -211,6 +211,8 @@ class Quiz{
 					time: answerTime
 				});
 
+				this._displayQuestionInformations(questions, position, answer.getAttribute('data-value'));
+
 				this._onAnswerCallbacks.forEach(callback => {
 					Reflect.apply(callback, null, [
 						questions[position],
@@ -221,8 +223,6 @@ class Quiz{
 						}
 					]);
 				});
-
-				this._displayQuestionInformations(questions, position, answer.getAttribute('data-value'));
 			});
 		});
 	}
@@ -258,6 +258,8 @@ class Quiz{
 					answer: '',
 					time: this._timeLimit
 				});
+				
+				this._displayQuestionInformations(questions, position);
 
 				this._onAnswerCallbacks.forEach(callback => {
 					Reflect.apply(callback, null, [
@@ -268,8 +270,6 @@ class Quiz{
 						}
 					]);
 				});
-				
-				this._displayQuestionInformations(questions, position);
 			}
 		}, 10);
 	}

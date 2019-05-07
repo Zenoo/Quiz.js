@@ -46,11 +46,6 @@ class Quiz{
 		 * @private
 		 */
 		this._timerInterval = null;
-		/**
-		 * @type {Boolean}
-		 * @private
-		 */
-		this._timerIntervalCanceled = false;
 
 		/**
 		 * @type {Date}
@@ -207,7 +202,6 @@ class Quiz{
 			answer.addEventListener('click', () => {
 				const answerTime = new Date() - this._timerStarted;
 
-				this._timerIntervalCanceled = true;
 				clearInterval(this._timerInterval);
 
 				this.answers.push({
@@ -250,7 +244,6 @@ class Quiz{
 			Reflect.apply(callback, null, [this._timer.parentElement]);
 		});
 
-		this._timerIntervalCanceled = false;
 		this._timerInterval = setInterval(() => {
 			const progress = (new Date() - this._timerStarted) / this._timeLimit;
 
@@ -260,7 +253,8 @@ class Quiz{
 			}else{
 				clearInterval(this._timerInterval);
 				
-				if(!this._timerIntervalCanceled){
+				// Hack for multi triggers ?
+				if(!this.answers.find(a => a.id == questions[position].id)){
 					this.answers.push({
 						id: questions[position].id,
 						answer: '',
@@ -511,7 +505,6 @@ class Quiz{
 	 * @returns {Quiz} The current Quiz
 	 */
 	reset(){
-		this._timerIntervalCanceled = false;
 		clearInterval(this._timerInterval);
 		this._timerStarted = null;
 		this.answers = [];

@@ -137,19 +137,16 @@ class Quiz{
 	 * @private
 	 */
 	_selectQuestions(questions, steps){
-		const selectedQuestions = [];
-		let i = steps;
+		const questionsArrayClone = questions.slice(0);
 
-		while(i > 0){
-			const randomPosition = Math.floor(Math.random() * steps);
+		// Shuffle the array
+		for (let i = questionsArrayClone.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
 
-			if(!selectedQuestions.includes(questions[randomPosition])){
-				selectedQuestions.push(questions[randomPosition]);
-				i--;
-			}
+			[questionsArrayClone[i], questionsArrayClone[j]] = [questionsArrayClone[j], questionsArrayClone[i]];
 		}
 
-		return selectedQuestions;
+		return questionsArrayClone.slice(0, steps);
 	}
 
 	/**
